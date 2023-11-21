@@ -1,0 +1,31 @@
+# DOMAIN
+DOMAIN,music.163.com
+DOMAIN,interface.music.163.com
+DOMAIN,interface3.music.163.com
+DOMAIN,apm.music.163.com
+DOMAIN,apm3.music.163.com
+DOMAIN,interface.music.163.com.163jiasu.com
+DOMAIN,interface3.music.163.com.163jiasu.com
+# IPV4
+IP-CIDR,183.136.182.20/32,no-resolve
+IP-CIDR,115.238.119.69/32,no-resolve
+IP-CIDR,183.134.34.249/32,no-resolve
+IP-CIDR,183.134.34.248/32,no-resolve
+IP-CIDR,122.225.83.109/32,no-resolve
+IP-CIDR,122.225.83.110/32,no-resolve
+IP-CIDR,122.225.83.106/32,no-resolve
+IP-CIDR,183.136.182.19/32,no-resolve
+IP-CIDR,115.238.119.68/32,no-resolve
+IP-CIDR,183.136.182.18/32,no-resolve
+IP-CIDR,115.238.119.67/32,no-resolve
+# IPV6
+IP-CIDR6,240e:f7:4019:65::5::/128
+IP-CIDR6,:f7:4019:12::3::/128
+IP-CIDR6,:f7:4019:65::4::/128
+IP-CIDR6,:f7:4019:12::2::/128
+IP-CIDR6,:f7:4019:12::1::/128
+IP-CIDR6,:f7:4019:65::3::/128
+IP-CIDR6,:918:800f::1:1a::/128
+IP-CIDR6,:904:4400:300::2::/128
+IP-CIDR6,:b1:9801:40e:800::57::/128
+IP-CIDR6,:b1:9801:40e:800::49::/128
