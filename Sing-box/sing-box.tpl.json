@@ -2,10 +2,15 @@
   "dns": {
     "fakeip": {
       "enabled": true,
-      "inet4_range": "198.18.0.0/15",
-      "inet6_range": "fc00::/18"
+      "inet4_range": "198.18.0.0/15"
     },
     "servers": [
+      {
+        "tag": "dns_proxy_with_ecs",
+        "address": "https://dns.google/dns-query",
+        "address_resolver": "dns_resovler",
+        "detour": "proxy"
+      },
       {
         "tag": "google",
         "address": "https://8.8.8.8/dns-query",
@@ -19,6 +24,17 @@
       {
         "tag": "fakeip",
         "address": "fakeip"
+      },
+      {
+        "tag": "dns_local",
+        "address": "https://dns.alidns.com/dns-query",
+        "address_resolver": "dns_resovler",
+        "detour": "freedom"
+      },
+      {
+        "tag": "dns_resovler",
+        "address": "udp://223.5.5.5",
+        "detour": "freedom"
       }
     ],
     "rules": [
@@ -44,8 +60,7 @@
       },
       {
         "query_type": [
-          "A",
-          "AAAA"
+          "A"
         ],
         "action": "route",
         "server": "fakeip",
@@ -55,8 +70,27 @@
         "rule_set": "cn_domain",
         "action": "route",
         "server": "ali"
+      },
+      {
+        "rule_set": [
+          "geosite-private"
+        ],
+        "server": "dns_local"
+      },
+      {
+        "rule_set": [
+          "geoip-cn"
+        ],
+        "server": "dns_local"
+      },
+      {
+        "inbound": [
+          "tun-RealIP"
+        ],
+        "server": "dns_proxy_with_ecs"
       }
     ],
+    "strategy": "ipv4_only",
     "final": "google",
     "independent_cache": true
   },
@@ -183,9 +217,93 @@
         ],
         "action": "route",
         "outbound": "cn"
+      },
+      {
+        "outbound": "Rules::cftunnel",
+        "domain": [
+          "region2.v2.argotunnel.com",
+          "region1.v2.argotunnel.com",
+          "quic.cftunnel.com",
+          "h2.cftunnel.com"
+        ],
+        "domain_suffix": [],
+        "domain_keyword": [],
+        "domain_regex": [],
+        "ip_cidr": [],
+        "source_ip_cidr": [],
+        "auth_user": [],
+        "protocol": [],
+        "network": [],
+        "inbound": [],
+        "process_name": [],
+        "port": [],
+        "rule_set": []
+      },
+      {
+        "outbound": "freedom",
+        "domain": [],
+        "domain_suffix": [],
+        "domain_keyword": [],
+        "domain_regex": [],
+        "ip_cidr": [],
+        "source_ip_cidr": [],
+        "auth_user": [],
+        "protocol": [],
+        "network": [
+          "udp"
+        ],
+        "inbound": [],
+        "process_name": [],
+        "port": [
+          443
+        ],
+        "action": "reject",
+        "rule_set": []
+      },
+      {
+        "outbound": "freedom",
+        "domain": [],
+        "domain_suffix": [],
+        "domain_keyword": [],
+        "domain_regex": [],
+        "ip_cidr": [],
+        "source_ip_cidr": [],
+        "auth_user": [],
+        "protocol": [
+          "quic"
+        ],
+        "network": [],
+        "inbound": [],
+        "process_name": [],
+        "port": [],
+        "action": "reject",
+        "rule_set": []
+      },
+      {
+        "rule_set": [
+          "geosite-private"
+        ],
+        "ip_is_private": true,
+        "outbound": "freedom"
       }
     ],
     "rule_set": [
+      {
+        "type": "remote",
+        "tag": "geoip-cn",
+        "format": "binary",
+        "url": "https://fastly.jsdelivr.net/gh/SagerNet/sing-geoip@rule-set/geoip-cn.srs",
+        "download_detour": "proxy",
+        "update_interval": "7d"
+      },
+      {
+        "type": "remote",
+        "tag": "geosite-private",
+        "format": "binary",
+        "url": "https://fastly.jsdelivr.net/gh/SagerNet/sing-geosite@rule-set/geosite-private.srs",
+        "download_detour": "proxy",
+        "update_interval": "7d"
+      },
       {
         "tag": "apple_ip",
         "type": "remote",
@@ -296,6 +414,31 @@
     "auto_detect_interface": true
   },
   "outbounds": [
+    {
+      "type": "direct",
+      "tag": "freedom"
+    },
+    {
+      "type": "selector",
+      "tag": "Rules::cftunnel",
+      "outbounds": [
+        "freedom",
+        "hk",
+        "hk-auto",
+        "tw",
+        "tw-auto",
+        "jp",
+        "jp-auto",
+        "sg",
+        "sg-auto",
+        "us",
+        "us-auto",
+        "all",
+        "all-auto",
+        "direct"
+      ],
+      "default": "freedom"
+    },
     {
       "tag": "proxy",
       "type": "selector",
@@ -633,19 +776,15 @@
   "inbounds": [
     {
       "type": "tun",
-      "address": "172.19.0.0/30",
-      "interface_name": "tun0",
+      "tag": "tun-RealIP",
+      "interface_name": "tun-singbox",
+      "address": [
+        "172.19.0.1/30"
+      ],
+      "stack": "system",
       "mtu": 9000,
-      "stack": "mixed",
-      "auto_route": true,
       "strict_route": false,
-      "platform": {
-        "http_proxy": {
-          "enabled": true,
-          "server": "0.0.0.0",
-          "server_port": 7890
-        }
-      }
+      "auto_route": true
     },
     {
       "type": "mixed",
