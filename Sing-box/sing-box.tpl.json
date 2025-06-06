@@ -59,6 +59,12 @@
         "action": "reject"
       },
       {
+        "inbound": [
+          "tun-RealIP"
+        ],
+        "server": "dns_proxy_with_ecs"
+      },
+      {
         "query_type": [
           "A"
         ],
@@ -82,12 +88,6 @@
           "geoip-cn"
         ],
         "server": "dns_local"
-      },
-      {
-        "inbound": [
-          "tun-RealIP"
-        ],
-        "server": "dns_proxy_with_ecs"
       }
     ],
     "strategy": "ipv4_only",
