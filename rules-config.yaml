@@ -19,7 +19,7 @@ targets:
     dir: Sing-box/GeoIP
     rules:
       - source: geoip-cn
-        tag: cn
+        tag: CN
         version: 3
     formats: [json, srs]
 
