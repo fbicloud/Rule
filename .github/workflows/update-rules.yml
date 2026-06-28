@@ -17,9 +17,19 @@ jobs:
 
       - name: Download sing-box
         run: |
-          TAG=$(curl -sL "https://api.github.com/repos/SagerNet/sing-box/releases/latest" | python3 -c "import sys,json; print(json.load(sys.stdin)['tag_name'])")
+          set -e
+          # Try API first, fall back to known latest version
+          TAG=$(curl -sL --retry 3 -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/SagerNet/sing-box/releases/latest" \
+            | python3 -c "import sys,json; print(json.load(sys.stdin)['tag_name'])" 2>/dev/null || echo "")
+          if [ -z "$TAG" ]; then
+            TAG="v1.13.14"
+            echo "API rate limited, using fallback: $TAG"
+          fi
+          echo "sing-box version: $TAG"
           URL="https://github.com/SagerNet/sing-box/releases/download/${TAG}/sing-box-${TAG}-linux-amd64.tar.gz"
-          curl -sL "$URL" -o sing-box.tar.gz
+          curl -sL --retry 3 "$URL" -o sing-box.tar.gz
+          file sing-box.tar.gz
           tar xzf sing-box.tar.gz
           sudo mv sing-box-*/sing-box /usr/local/bin/sing-box
           sing-box version
