@@ -40,6 +40,9 @@ jobs:
       - name: Generate rules
         run: python3 scripts/generate-rules.py --config rules-config.yaml --output dist
 
+      - name: Verify rules
+        run: bash scripts/verify-rules.sh dist
+
       - name: Publish to Sing-box branch
         run: |
           cd dist/Sing-box
