@@ -1,0 +1,42 @@
+name: Update Rules
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+
+      - name: Download sing-box
+        run: |
+          TAG=$(curl -sL "https://api.github.com/repos/SagerNet/sing-box/releases/latest" | python3 -c "import sys,json; print(json.load(sys.stdin)['tag_name'])")
+          URL="https://github.com/SagerNet/sing-box/releases/download/${TAG}/sing-box-${TAG}-linux-amd64.tar.gz"
+          curl -sL "$URL" -o sing-box.tar.gz
+          tar xzf sing-box.tar.gz
+          sudo mv sing-box-*/sing-box /usr/local/bin/sing-box
+          sing-box version
+
+      - name: Install Python deps
+        run: pip install pyyaml
+
+      - name: Generate rules
+        run: python3 scripts/generate-rules.py --config rules-config.yaml --output dist
+
+      - name: Publish to Sing-box branch
+        run: |
+          cd dist/Sing-box
+          git init
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout --orphan tmp
+          git add -A
+          git commit -m "auto: update rules $(date -u +%Y-%m-%d)"
+          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" tmp:Sing-box

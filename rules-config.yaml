@@ -1,0 +1,32 @@
+# 规则集自动生成配置
+# 扩展新规则：在 sources 定义数据源 → 在 targets 引用即可
+# https://github.com/fbicloud/Rule
+
+output:
+  branch: Sing-box        # 发布到的分支
+
+sources:
+  # ─── 数据源 ───
+  geoip-cn:
+    type: geoip
+    url:  https://github.com/Hackl0us/GeoIP2-CN/raw/release/CN-ip-cidr.txt
+    format: cidr          # 每行一个 IPv4/IPv6 CIDR
+    desc: 中国 IP 段 (~7000+ 条)
+
+targets:
+  # ─── sing-box ───
+  sing-box:
+    dir: Sing-box/GeoIP
+    rules:
+      - source: geoip-cn
+        tag: cn
+        version: 3
+    formats: [json, srs]
+
+  # ─── Surge (未来扩展 — 取消注释即用) ───
+  # surge:
+  #   dir: Surge/Rules
+  #   rules:
+  #     - source: geoip-cn
+  #       tag: CN
+  #   formats: [list]
