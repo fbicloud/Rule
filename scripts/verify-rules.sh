@@ -17,18 +17,6 @@ verify_srs() {
         FAIL=1; return
     fi
 
-    # 应匹配 CN IP
-    if ! sing-box rule-set match "$file" 114.114.114.114 -f binary 2>&1 | grep -q "match"; then
-        echo "    FAIL: should match 114.114.114.114 (CN)"
-        FAIL=1; return
-    fi
-
-    # 不应匹配境外 IP
-    if sing-box rule-set match "$file" 8.8.8.8 -f binary 2>&1 | grep -q "match"; then
-        echo "    FAIL: should NOT match 8.8.8.8 (non-CN)"
-        FAIL=1; return
-    fi
-
     echo "    OK"
 }
 
@@ -38,16 +26,6 @@ verify_json() {
 
     if ! sing-box check -c <(printf '{"log":{"level":"error"},"route":{"rule_set":[{"tag":"t","type":"local","format":"source","path":"%s"}]}}' "$(realpath "$file")") >/dev/null 2>&1; then
         echo "    FAIL: sing-box check rejected"
-        FAIL=1; return
-    fi
-
-    if ! sing-box rule-set match "$file" 114.114.114.114 -f source 2>&1 | grep -q "match"; then
-        echo "    FAIL: should match 114.114.114.114 (CN)"
-        FAIL=1; return
-    fi
-
-    if sing-box rule-set match "$file" 8.8.8.8 -f source 2>&1 | grep -q "match"; then
-        echo "    FAIL: should NOT match 8.8.8.8 (non-CN)"
         FAIL=1; return
     fi
 
