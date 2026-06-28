@@ -1,0 +1,2 @@
+*.srs binary
+*.json text eol=lf

@@ -15,9 +15,9 @@ jobs:
       - name: Checkout main
         uses: actions/checkout@v4
 
-      - name: Download sing-box
+      - name: Get sing-box version
+        id: sb-version
         run: |
-          set -e
           TAG=$(curl -sL --retry 3 -H "Accept: application/vnd.github+json" \
             "https://api.github.com/repos/SagerNet/sing-box/releases/latest" \
             | python3 -c "import sys,json; print(json.load(sys.stdin)['tag_name'])" 2>/dev/null || echo "")
@@ -26,6 +26,22 @@ jobs:
             echo "API rate limited, using fallback: $TAG"
           fi
           VER="${TAG#v}"
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "ver=$VER" >> $GITHUB_OUTPUT
+
+      - name: Cache sing-box
+        id: cache-sing-box
+        uses: actions/cache@v4
+        with:
+          path: /usr/local/bin/sing-box
+          key: sing-box-${{ steps.sb-version.outputs.ver }}
+
+      - name: Download sing-box
+        if: steps.cache-sing-box.outputs.cache-hit != 'true'
+        run: |
+          set -e
+          TAG="${{ steps.sb-version.outputs.tag }}"
+          VER="${{ steps.sb-version.outputs.ver }}"
           echo "sing-box version: tag=$TAG ver=$VER"
           URL="https://github.com/SagerNet/sing-box/releases/download/${TAG}/sing-box-${VER}-linux-amd64.tar.gz"
           curl -sL --retry 3 "$URL" -o sing-box.tar.gz
